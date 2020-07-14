@@ -38,16 +38,17 @@ public class HomeController {
       if (employerId == null) {
         model.addAttribute("title", "My Jobs");
         model.addAttribute("jobs", jobRepository.findAll());
-      } else {
-        Optional<Employer> optEmployer = employerRepository.findById(employerId);
-        if (optEmployer.isEmpty()) {
-          model.addAttribute("title", "Invalid Employer ID: " + employerId);
-        } else {
-          Employer employer = optEmployer.get();
-          model.addAttribute("title", employer.getName());
-          model.addAttribute("jobs", employer.getJobs());
-        }
       }
+//      else {
+//        Optional<Employer> optEmployer = employerRepository.findById(employerId);
+//        if (optEmployer.isEmpty()) {
+//          model.addAttribute("title", "Invalid Employer ID: " + employerId);
+//        } else {
+//          Employer employer = optEmployer.get();
+//          model.addAttribute("title", employer.getName());
+//          model.addAttribute("jobs", employer.getJobs());
+//        }
+//      }
 
 
         return "index";
@@ -64,16 +65,19 @@ public class HomeController {
 
     @PostMapping("add")
     public String processAddJobForm(@ModelAttribute @Valid Job newJob,
-                                       Errors errors, Model model, @RequestParam int employerId, @RequestParam List<Integer> skills) {
+                                       Errors errors, Model model, @RequestParam int employerId,
+                                        @RequestParam List<Integer> skills) {
+
+      Optional<Employer> optionalEmployer = employerRepository.findById(employerId);
 
         if (errors.hasErrors()) {
             model.addAttribute("title", "Add Job");
-            model.addAttribute("job", newJob); //?
             model.addAttribute(new Job());
             return "add";
         }
 
         List<Skill> skillObjs = (List<Skill>) skillRepository.findAllById(skills);
+        newJob.setEmployer(optionalEmployer.get());
         newJob.setSkills(skillObjs);
         jobRepository.save(newJob);
         return "redirect:";
